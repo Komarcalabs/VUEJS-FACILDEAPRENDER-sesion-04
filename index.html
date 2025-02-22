@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>Semáforo - Webinar con Vue</title>
+</head>
+<body>
+    <div id="app">
+        <div class="semaforo-wrap">
+            <!-- Valores -->
+            <label for="red">
+                <span>Tiempo del color rojo</span>
+                <input type="number" name="red" id="red" v-model="timeRed">
+            </label>
+             <label for="yellow">
+                <span>Tiempo del color amarillo</span>
+                 <input type="number" name="yellow" id="yellow" v-model="timeYellow">
+             </label>
+             <label for="green">
+                <span>Tiempo del color verde</span>
+                 <input type="number" name="green" id="green"  v-model="timeGreen">
+             </label>
+        </div>
+        <div class="semaforo">
+            <!-- Semaforo -->
+            <div ref="red" class="semaforo-color red"></div>
+            <div ref="yellow" class="semaforo-color yellow"></div>
+            <div ref="green" class="semaforo-color green"></div>
+        </div>
+    </div>
+    <script>
+        const {createApp, useTemplateRef, ref, onMounted, watch} = Vue;
+
+        createApp({
+            setup(){
+                const timeRed = ref(5);
+                const timeYellow = ref(2);
+                const timeGreen = ref(3);
+
+                const colorRed = useTemplateRef("red");
+                const colorYellow = useTemplateRef("yellow");
+                const colorGreen = useTemplateRef("green");
+
+                const actualFoco = ref("red")
+
+                onMounted(() => {
+                    colorRed.value.classList.add("focus")
+                    timer(timeRed, colorRed, colorYellow, "yellow")
+                })
+
+                function timer(time, colorRefActual, colorRefNext,nextFoco){
+                    setTimeout(() =>{
+                        colorRefActual.value.classList.remove("focus");
+                        colorRefNext.value.classList.add("focus")
+                        actualFoco.value = nextFoco
+                    }, time.value*1000)
+                }
+
+                watch(actualFoco, (newValue) => {
+                    console.log(newValue);
+                    
+                    if(newValue == "yellow"){
+                        timer(timeYellow, colorYellow, colorGreen, "green")
+                    }
+                    if(newValue == "green"){
+                        timer(timeGreen, colorGreen, colorRed, "red")
+                    }
+                    if(newValue == "red"){
+                        timer(timeRed, colorRed, colorYellow, "yellow")
+                    }
+                })
+
+                return{
+                    timeRed,
+                    timeYellow,
+                    timeGreen
+                }
+            }
+        }).mount("#app")
+    </script>
+    <style>
+        #app {
+            display: flex;
+            justify-content: center;
+            align-items: start;
+            gap: 1rem;
+        }
+        .semaforo-wrap > label {
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: flex-start;
+            align-items: start;
+            gap: 0.5rem;
+            margin: 1rem auto;
+        }
+        .semaforo {
+            width: 50px;
+            border: thick solid gray;
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            gap: 1rem;
+        }
+        .semaforo-color {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            border: thin solid gray;
+        }
+        .red {
+            background-color: red;
+            opacity: 0.5;
+            transition: all 100ms;
+        }
+        .yellow {
+            background-color: hsl(53, 100%, 50%);
+            opacity: 0.5;
+            transition: all 100ms;
+        }
+        .green {
+            background-color: green;
+            opacity: 0.5;
+            transition: all 100ms;
+        }
+        .focus {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+    </style>
+</body>
+</html>
